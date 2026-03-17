@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Quiz Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0f1a;
+      --bg-elevated: #111827;
+      --card: #1a2234;
+      --border: #2a3548;
+      --fg: #f1f5f9;
+      --muted: #64748b;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.3);
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .bg-pattern { position: fixed; inset: 0; background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.15), transparent), radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59, 130, 246, 0.1), transparent), linear-gradient(180deg, var(--bg) 0%, #0d1321 100%); z-index: -2; }
+    .grid-overlay { position: fixed; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 60px 60px; z-index: -1; }
+    
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: fadeInUp 0.5s ease-out forwards; }
+    
+    .input-field { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; font-size: 15px; color: var(--fg); width: 100%; transition: all 0.25s ease; font-family: inherit; }
+    .input-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, #059669 100%); color: white; font-weight: 600; padding: 14px 28px; border-radius: 12px; border: none; cursor: pointer; font-size: 15px; transition: all 0.25s ease; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px var(--accent-glow); }
+    .btn-danger { background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%); color: white; font-weight: 600; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+    
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* Quiz Styles */
+    .quiz-option { background: var(--bg); border: 2px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; display: flex; align-items: center; gap: 14px; transition: all 0.2s; }
+    .quiz-option:hover { border-color: var(--muted); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(16, 185, 129, 0.1); }
+    .option-marker { width: 28px; height: 28px; border-radius: 8px; background: var(--card); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
+    .quiz-option.selected .option-marker { background: var(--accent); border-color: var(--accent); color: white; }
+
+    /* Admin Table */
+    .status-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    .status-table th, .status-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+    .status-table th { color: var(--muted); font-weight: 500; }
+    
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- LOGIN PAGE -->
+  <div id="loginPage" class="page active">
+    <div class="min-h-screen flex items-center justify-center p-6">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-10 animate-in">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20 mb-6">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-emerald-400"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <h1 class="text-3xl font-bold tracking-tight mb-2">Secure Quiz Portal</h1>
+          <p class="text-[var(--muted)]">Select your credentials to begin</p>
+        </div>
+
+        <div class="card animate-in">
+          <form id="loginForm" class="space-y-5">
+            <!-- Class Select (Hidden for Admin check logic) -->
+            <div id="studentFields">
+              <label class="block text-sm font-medium mb-2 text-[var(--muted)]">Select Class</label>
+              <select id="classSelect" class="input-field" required>
+                <option value="" disabled selected>Select your class</option>
+              </select>
+            </div>
+
+            <!-- ID Select (Hidden for Admin) -->
+            <div id="studentFields2">
+              <label class="block text-sm font-medium mb-2 text-[var(--muted)]">Select Ad No (ID)</label>
+              <select id="idSelect" class="input-field" required disabled>
+                <option value="" disabled selected>Select Class First</option>
+              </select>
+            </div>
+
+            <!-- Name (Auto-filled) -->
+            <div>
+              <label class="block text-sm font-medium mb-2 text-[var(--muted)]">Name</label>
+              <input type="text" id="nameInput" class="input-field" readonly placeholder="Name will appear here">
+            </div>
+
+            <!-- Phone Number (The Key) -->
+            <div>
+              <label class="block text-sm font-medium mb-2 text-[var(--muted)]">Phone Number</label>
+              <input type="tel" id="phoneInput" class="input-field" placeholder="Enter phone number" required pattern="[0-9]{10,11}">
+              <p class="text-xs text-[var(--muted)] mt-2">* Use 9876543210 for Admin Access</p>
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" class="btn-primary w-full" id="loginBtn">Login</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div id="adminPage" class="page">
+    <div class="min-h-screen p-6">
+      <div class="max-w-5xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+          <button onclick="logout()" class="text-sm text-[var(--muted)] hover:text-white">Logout</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <!-- Control Panel -->
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4">Quiz Control</h3>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[var(--muted)]">Current Status:</span>
+              <span id="quizStatusBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400">Checking...</span>
+            </div>
+            <div class="flex gap-3">
+              <button onclick="setQuizStatus('OPEN')" class="btn-primary flex-1">Start Quiz</button>
+              <button onclick="setQuizStatus('CLOSED')" class="btn-danger flex-1">Stop Quiz</button>
+            </div>
+          </div>
+
+          <!-- Add Question -->
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4">Add Question (Local)</h3>
+            <form id="addQuestionForm" class="space-y-3">
+              <input type="text" id="newQText" class="input-field text-sm" placeholder="Question text" required>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="newOptA" class="input-field text-sm" placeholder="Option A" required>
+                <input type="text" id="newOptB" class="input-field text-sm" placeholder="Option B" required>
+                <input type="text" id="newOptC" class="input-field text-sm" placeholder="Option C" required>
+                <input type="text" id="newOptD" class="input-field text-sm" placeholder="Option D" required>
+              </div>
+              <select id="newCorrect" class="input-field text-sm">
+                <option value="0">A is Correct</option>
+                <option value="1">B is Correct</option>
+                <option value="2">C is Correct</option>
+                <option value="3">D is Correct</option>
+              </select>
+              <button type="submit" class="btn-primary w-full">Add to Pool</button>
+            </form>
+            <p class="text-xs text-[var(--muted)] mt-2">*Questions are stored in this browser for testing.</p>
+          </div>
+        </div>
+
+        <!-- Status View -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Live Submissions</h3>
+            <button onclick="loadAdminStatus()" class="text-sm text-emerald-400 hover:underline">Refresh Data</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="status-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Class</th>
+                  <th>Name</th>
+                  <th>Score</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="statusTableBody">
+                <tr><td colspan="5" class="text-center text-[var(--muted)]">Click Refresh to load data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ PAGE -->
+  <div id="quizPage" class="page">
+    <!-- Top Bar -->
+    <div class="fixed top-0 left-0 right-0 bg-[var(--bg)]/90 backdrop-blur-lg border-b border-[var(--border)] z-50">
+      <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <span class="font-semibold">Quiz Portal</span>
+          <div class="h-5 w-px bg-[var(--border)]"></div>
+          <span id="userName" class="text-sm text-[var(--muted)]"></span>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-3 bg-[var(--card)] px-4 py-2 rounded-lg border border-[var(--border)]">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="timerDisplay" class="mono font-bold text-xl">30:00</span>
+          </div>
+          <span id="progressText" class="text-sm text-[var(--muted)] mono">1/10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Warning Banner -->
+    <div class="fixed top-[73px] left-0 right-0 z-40 px-6 py-3 bg-[var(--bg)]/95 border-b border-[var(--border)]">
+      <div class="max-w-5xl mx-auto flex items-center gap-2 text-red-400 text-sm font-medium">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Do not switch tabs. This is monitored.
+      </div>
+    </div>
+
+    <!-- Quiz Content -->
+    <div class="pt-40 pb-32 px-6">
+      <div class="max-w-3xl mx-auto">
+        <div class="card mb-6">
+          <h2 id="questionText" class="text-xl font-semibold leading-relaxed mb-6">Loading...</h2>
+          <div id="optionsContainer" class="space-y-3"></div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <button id="prevBtn" class="btn-secondary" style="background:var(--card);border:1px solid var(--border);padding:12px 24px;border-radius:10px;cursor:pointer;" disabled>Previous</button>
+          <div class="flex gap-2">
+             <button id="nextBtn" class="btn-primary">Next</button>
+             <button id="submitBtn" class="btn-primary hidden">Submit</button>
+          </div>
+        </div>
+
+        <div class="card mt-8">
+          <div id="questionNav" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS PAGE -->
+  <div id="resultsPage" class="page">
+    <div class="min-h-screen flex items-center justify-center p-6">
+      <div class="w-full max-w-2xl text-center">
+        <div class="animate-in">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 mb-6 text-emerald-400">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h1 class="text-3xl font-bold mb-2">Quiz Completed</h1>
+          <p class="text-[var(--muted)]">Your responses have been submitted.</p>
+        </div>
+        <div class="card my-8 text-left">
+          <div class="grid grid-cols-2 gap-4">
+            <div><span class="text-[var(--muted)] text-sm">Name</span><p id="resName" class="font-semibold">-</p></div>
+            <div><span class="text-[var(--muted)] text-sm">Score</span><p id="resScore" class="font-semibold text-emerald-400">-</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WARNING MODAL -->
+  <div id="warningModal" class="fixed inset-0 bg-black/80 backdrop-blur hidden z-50 items-center justify-center">
+    <div class="card max-w-md w-full text-center p-8">
+      <h3 class="text-xl font-bold text-red-400 mb-2">Warning</h3>
+      <p class="mb-4">Tab switching detected.</p>
+      <button onclick="document.getElementById('warningModal').classList.add('hidden')" class="btn-primary">I Understand</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const CONFIG = {
+      GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxA3FcIMjAzRrE--M9e9rxXMx4l1yzK3A9GE59iqbtXGZ94mebIamVo46T35PxPMXbZ/exec',
+      ADMIN_PHONE: '9876543210',
+      DURATION: 30 * 60
+    };
+
+    // ============================================
+    // DATABASE
+    // ============================================
+    const USERS_DB = {
+      "S2": { "1224": "AHMED HAISAM", "1225": "MUHAMMED MP" }, // Truncated for brevity - KEEP YOUR FULL LIST HERE
+      "S3": { "1177": "MUHAMMED RAYYAN", "1195": "MUHAMMED AZZAM" },
+      "S4": { "1135": "MUHAMMED SWALIH P", "1133": "AJSAL RAHMAN MP" },
+      "S5": { "1122": "SHAHIN SHADI C K", "1100": "MUHAMMED SIYAD P. V" },
+      "SS1": { "1050": "MUHAMMAD SINAN PC", "1070": "MUHAMMED MUSAMMIL B K" },
+      "SS2": { "1022": "MUHAMMAD NASEEF K", "970": "ABDUL BASIT PARAMBADEN" }
+    };
+
+    // Load Questions (Default or from LocalStorage)
+    const DEFAULT_QUESTIONS = [
+      { id: 1, question: "What is the capital of France?", options: ["London", "Paris", "Berlin", "Madrid"], correct: 1 },
+      { id: 2, question: "Which planet is the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Saturn"], correct: 1 },
+      { id: 3, question: "What does HTML stand for?", options: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyper Transfer Markup Language", "Home Tool Markup Language"], correct: 0 },
+      { id: 4, question: "Largest Ocean?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], correct: 3 },
+      { id: 5, question: "Theory of Relativity by?", options: ["Newton", "Einstein", "Bohr", "Galileo"], correct: 1 }
+    ];
+
+    let QUIZ_DATA = JSON.parse(localStorage.getItem('quiz_questions')) || DEFAULT_QUESTIONS;
+
+    let state = { user: {}, answers: {}, currentQ: 0, time: CONFIG.DURATION, violations: 0, timer: null };
+
+    // ============================================
+    // INIT
+    // ============================================
+    const el = {
+      loginPage: document.getElementById('loginPage'),
+      adminPage: document.getElementById('adminPage'),
+      quizPage: document.getElementById('quizPage'),
+      resultsPage: document.getElementById('resultsPage'),
+      
+      loginForm: document.getElementById('loginForm'),
+      phoneInput: document.getElementById('phoneInput'),
+      classSelect: document.getElementById('classSelect'),
+      idSelect: document.getElementById('idSelect'),
+      nameInput: document.getElementById('nameInput'),
+      studentFields: document.getElementById('studentFields'),
+      studentFields2: document.getElementById('studentFields2'),
+      
+      quizStatusBadge: document.getElementById('quizStatusBadge'),
+      statusTableBody: document.getElementById('statusTableBody')
+    };
+
+    function init() {
+      // Populate Classes
+      Object.keys(USERS_DB).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c;
+        el.classSelect.appendChild(opt);
+      });
+
+      el.classSelect.addEventListener('change', (e) => {
+        const cls = e.target.value;
+        el.idSelect.innerHTML = '<option disabled selected>Select ID</option>';
+        el.idSelect.disabled = false;
+        Object.keys(USERS_DB[cls]).forEach(id => {
+          const opt = document.createElement('option');
+          opt.value = id; opt.textContent = id;
+          el.idSelect.appendChild(opt);
+        });
+        el.nameInput.value = '';
+        state.user.className = cls;
+      });
+
+      el.idSelect.addEventListener('change', (e) => {
+        state.user.id = e.target.value;
+        state.user.name = USERS_DB[state.user.className][e.target.value];
+        el.nameInput.value = state.user.name;
+      });
+
+      el.loginForm.addEventListener('submit', handleLogin);
+      
+      // Admin Add Question
+      document.getElementById('addQuestionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newQ = {
+          id: QUIZ_DATA.length + 1,
+          question: document.getElementById('newQText').value,
+          options: [
+            document.getElementById('newOptA').value,
+            document.getElementById('newOptB').value,
+            document.getElementById('newOptC').value,
+            document.getElementById('newOptD').value
+          ],
+          correct: parseInt(document.getElementById('newCorrect').value)
+        };
+        QUIZ_DATA.push(newQ);
+        localStorage.setItem('quiz_questions', JSON.stringify(QUIZ_DATA));
+        alert("Question added to Local Pool!");
+        e.target.reset();
+      });
+    }
+
+    // ============================================
+    // LOGIN & ROUTING
+    // ============================================
+    async function handleLogin(e) {
+      e.preventDefault();
+      const phone = el.phoneInput.value;
+
+      if (phone === CONFIG.ADMIN_PHONE) {
+        // ADMIN ROUTE
+        showPage(el.adminPage);
+        checkStatus(); // Initial status check
+      } else {
+        // STUDENT ROUTE
+        if (!state.user.className || !state.user.id) {
+          alert("Please select Class and ID.");
+          return;
+        }
+        state.user.phone = phone;
+
+        const btn = document.getElementById('loginBtn');
+        btn.textContent = "Checking Quiz Status...";
+        btn.disabled = true;
+
+        // Check Global Status from Sheet
+        try {
+          const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL);
+          const data = await res.json();
+          
+          if (data.status === 'CLOSED') {
+            alert("The quiz is currently closed by the administrator.");
+            btn.textContent = "Login";
+            btn.disabled = false;
+            return;
+          }
+          
+          // Check local retake
+          const saved = JSON.parse(localStorage.getItem('quiz_users') || '{}');
+          if (saved[state.user.id]) {
+            alert("You have already taken this quiz.");
+            btn.textContent = "Login";
+            btn.disabled = false;
+            return;
+          }
+
+          startQuiz();
+        } catch (err) {
+          alert("Error connecting to server. Check internet.");
+          btn.textContent = "Login";
+          btn.disabled = false;
+        }
+      }
+    }
+
+    // ============================================
+    // ADMIN FUNCTIONS
+    // ============================================
+    function checkStatus() {
+      fetch(CONFIG.GOOGLE_SCRIPT_URL)
+        .then(r => r.json())
+        .then(data => {
+          const badge = el.quizStatusBadge;
+          if (data.status === 'CLOSED') {
+            badge.textContent = "CLOSED";
+            badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400";
+          } else {
+            badge.textContent = "OPEN";
+            badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400";
+          }
+        });
+    }
+
+    async function setQuizStatus(status) {
+      await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'set_status', status: status })
+      });
+      checkStatus();
+    }
+
+    async function loadAdminStatus() {
+      el.statusTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Loading...</td></tr>';
+      const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'get_results' })
+      });
+      const data = await res.json();
+      
+      if (data.data && data.data.length > 0) {
+        el.statusTableBody.innerHTML = data.data.map(row => `
+          <tr>
+            <td class="mono text-xs">${new Date(row.date).toLocaleTimeString()}</td>
+            <td>${row.sheet}</td>
+            <td>${row.name}</td>
+            <td class="font-bold text-emerald-400">${row.score}%</td>
+            <td class="${row.status==='auto_submit'?'text-red-400':'text-emerald-400'}">${row.status}</td>
+          </tr>
+        `).join('');
+      } else {
+        el.statusTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-[var(--muted)]">No submissions yet.</td></tr>';
+      }
+    }
+
+    function logout() { location.reload(); }
+
+    // ============================================
+    // QUIZ LOGIC (Simplified from previous)
+    // ============================================
+    function startQuiz() {
+      showPage(el.quizPage);
+      document.getElementById('userName').textContent = state.user.name;
+      state.quizStarted = true;
+      renderQ();
+      state.timer = setInterval(() => {
+        state.time--;
+        const m = Math.floor(state.time/60); const s = state.time%60;
+        document.getElementById('timerDisplay').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        if (state.time <= 0) submitQuiz('timeout');
+      }, 1000);
+      setupAntiCheat();
+    }
+
+    function renderQ() {
+      const q = QUIZ_DATA[state.currentQ];
+      const labels = ['A','B','C','D'];
+      document.getElementById('questionText').textContent = q.question;
+      document.getElementById('optionsContainer').innerHTML = q.options.map((opt,i) => `
+        <div class="quiz-option ${state.answers[q.id] === i ? 'selected' : ''}" onclick="selectAns(${i})">
+          <div class="option-marker">${labels[i]}</div>
+          <span>${opt}</span>
+        </div>
+      `).join('');
+      
+      document.getElementById('prevBtn').disabled = state.currentQ === 0;
+      document.getElementById('nextBtn').classList.toggle('hidden', state.currentQ === QUIZ_DATA.length-1);
+      document.getElementById('submitBtn').classList.toggle('hidden', state.currentQ !== QUIZ_DATA.length-1);
+      document.getElementById('progressText').textContent = `${state.currentQ+1}/${QUIZ_DATA.length}`;
+      
+      renderNav();
+    }
+
+    window.selectAns = (idx) => {
+      state.answers[QUIZ_DATA[state.currentQ].id] = idx;
+      renderQ();
+    };
+
+    function renderNav() {
+      document.getElementById('questionNav').innerHTML = QUIZ_DATA.map((_,i) => 
+        `<button onclick="goTo(${i})" class="w-10 h-10 rounded border-2 ${state.currentQ===i?'border-emerald-500 bg-emerald-500/10':'border-[var(--border)]'}">${i+1}</button>`
+      ).join('');
+    }
+    window.goTo = (i) => { state.currentQ = i; renderQ(); };
+
+    document.getElementById('nextBtn').onclick = () => { state.currentQ++; renderQ(); };
+    document.getElementById('prevBtn').onclick = () => { state.currentQ--; renderQ(); };
+    document.getElementById('submitBtn').onclick = () => { if(confirm("Submit?")) submitQuiz('manual'); };
+
+    function setupAntiCheat() {
+      document.addEventListener('visibilitychange', () => {
+        if(document.hidden && state.quizStarted) {
+          state.violations++;
+          document.getElementById('warningModal').classList.remove('hidden');
+          if(state.violations >= 3) submitQuiz('auto_submit');
+        }
+      });
+    }
+
+    async function submitQuiz(reason) {
+      clearInterval(state.timer);
+      let correct = 0;
+      QUIZ_DATA.forEach(q => { if(state.answers[q.id] === q.correct) correct++; });
+      const score = Math.round((correct/QUIZ_DATA.length)*100);
+      
+      await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'submit',
+          sessionId: Date.now(),
+          user: state.user,
+          answers: state.answers,
+          score: score,
+          correct: correct,
+          timeTaken: "Completed",
+          reason: reason,
+          violations: state.violations
+        })
+      });
+
+      if(state.user.id !== 'ADMIN') {
+        const saved = JSON.parse(localStorage.getItem('quiz_users') || '{}');
+        saved[state.user.id] = { score: score };
+        localStorage.setItem('quiz_users', JSON.stringify(saved));
+      }
+
+      document.getElementById('resName').textContent = state.user.name;
+      document.getElementById('resScore').textContent = score + "%";
+      showPage(el.resultsPage);
+    }
+
+    function showPage(p) {
+      document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+      p.classList.add('active');
+    }
+
+    init();
+  </script>
+</body>
+</html>
