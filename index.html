@@ -73,16 +73,16 @@
 
         <div class="card animate-in">
           <form id="loginForm" class="space-y-5">
-            <!-- Class Select (Hidden for Admin check logic) -->
-            <div id="studentFields">
+            <!-- Class Select -->
+            <div>
               <label class="block text-sm font-medium mb-2 text-[var(--muted)]">Select Class</label>
               <select id="classSelect" class="input-field" required>
                 <option value="" disabled selected>Select your class</option>
               </select>
             </div>
 
-            <!-- ID Select (Hidden for Admin) -->
-            <div id="studentFields2">
+            <!-- ID Select -->
+            <div>
               <label class="block text-sm font-medium mb-2 text-[var(--muted)]">Select Ad No (ID)</label>
               <select id="idSelect" class="input-field" required disabled>
                 <option value="" disabled selected>Select Class First</option>
@@ -276,15 +276,72 @@
     };
 
     // ============================================
-    // DATABASE
+    // FULL DATABASE
     // ============================================
     const USERS_DB = {
-      "S2": { "1224": "AHMED HAISAM", "1225": "MUHAMMED MP" }, // Truncated for brevity - KEEP YOUR FULL LIST HERE
-      "S3": { "1177": "MUHAMMED RAYYAN", "1195": "MUHAMMED AZZAM" },
-      "S4": { "1135": "MUHAMMED SWALIH P", "1133": "AJSAL RAHMAN MP" },
-      "S5": { "1122": "SHAHIN SHADI C K", "1100": "MUHAMMED SIYAD P. V" },
-      "SS1": { "1050": "MUHAMMAD SINAN PC", "1070": "MUHAMMED MUSAMMIL B K" },
-      "SS2": { "1022": "MUHAMMAD NASEEF K", "970": "ABDUL BASIT PARAMBADEN" }
+      "S2": {
+        "1224": "AHMED HAISAM", "1225": "MUHAMMED MP", "1226": "MOHAMMED RIFAHATH TP", "1227": "MOHAMMED ADNAN P",
+        "1228": "MUHAMMED FARHAN T", "1229": "MUHAMMED HANEEN", "1230": "MUHAMMED MC", "1231": "ABDUL MAJID KARI",
+        "1232": "SHADIL MUHMMED", "1233": "RIZAN MUHAMMED PP", "1234": "MUHAMMED SUWAIBITH", "1235": "ABYAN MUHAMMED KM",
+        "1236": "MUHAMMED AJSAL C", "1237": "ABDULLA JUMAIL", "1238": "MUHAMMED SHEZIN P", "1239": "MUHAMMED IRFAN",
+        "1240": "HANI ABDU SHAKOOR PA", "1241": "MUHAMMED SHAZAN P", "1242": "MUHAMMED NIHAL MP", "1243": "MUHAMMED AJAS K",
+        "1244": "MOHAMED SWABEEH PK", "1245": "MUHAMMED SHAMMAS P", "1246": "MUHAMMED DHIL BADHUSHA U", "1247": "MUHAMMED JALAL T",
+        "1248": "MUHAMMED FAHEEM", "1249": "MUHAMMAD SHAMMAS OK", "1250": "MUHAMMAD QASIM", "1251": "MUHAMMED FAHEEM CK",
+        "1252": "SYED HADI HASHIM", "1253": "MUHAMMED SHAH PP", "1202": "MUHAMMED NAFIH .P"
+      },
+      "S3": {
+        "1177": "MUHAMMED RAYYAN", "1208": "ABDUL WASIH P", "1195": "MUHAMMED AZZAM", "1178": "MUHAMMAD SAHAL.T",
+        "1181": "MOHAMED MINHAJ", "1196": "HADI K", "1199": "ABDUL VASIH VT", "1207": "MUHAMMED AFLAH M K",
+        "1182": "ZIYAN AHAMMAD", "1185": "BISHRUNNAJAH K", "1190": "MUHAMMED NIHAL.M", "1206": "MUHAMMED SHAHANSHA",
+        "1192": "NAFIH", "1203": "AMAN SHADIL K", "1180": "MUHAMMEDALI SHIHAB T", "1186": "MUHAMMED ZAIDH",
+        "1191": "SAYYID ABSHAR ALI PMS", "1198": "MOHAMMED FADIL.P", "1205": "AHMAD DIYAB", "1183": "SAYYID SINAN VT",
+        "1194": "AKIF ALI", "1188": "MUHAMMED ASHMIL MK", "1165": "MUHAMMED NISHAN M P", "1189": "AHAMMED SHAN P",
+        "1184": "RAYYAN N", "1197": "MUHAMMED FAHIM P", "1200": "MIQDAD HASSAN", "1201": "MUHAMMED JASEEM.M",
+        "1179": "MUHAMMED SHAHAN P", "1222": "MUHAMMED FAHEEM"
+      },
+      "S4": {
+        "1135": "MUHAMMED SWALIH P", "1133": "AJSAL RAHMAN MP", "1138": "ABDUL VARIS C", "1139": "MUHAMMED NIHAL .M",
+        "1154": "ALEEF MOHAMED PK", "1169": "MUHAMMED RABEEH. P.P", "1145": "MUHAMMED ANAS.M", "1149": "MUHAMMED SINAN V.T",
+        "1155": "SHAHID AHMED M", "1150": "FIYAZ ABDURAHIMAN K", "1134": "MUHAMMED MUFLIH", "1141": "HIFAZ M",
+        "1143": "MOHAMMED RIFAN", "1166": "MUHAMMED MISHAL MC", "1151": "MUHAMMED HADI. A", "1146": "MUHAMMAD MIDLAJ",
+        "1159": "MUHAMMED MUFLIH KP", "1142": "MUHAMMED NASIH P", "1144": "MUHAMMAD VP", "1164": "MUHAMMAD JALVAN K T",
+        "1162": "SHIBLI K", "1147": "MOHAMED ZIYAD", "1158": "MOHAMMED YASEEN K T", "1161": "INFAL V",
+        "1148": "MUHAMMED NIHAL.M.T", "1163": "ADNAN ABOOBACKER", "1152": "SHAN MOHAMMED P", "1153": "MUHAMMED FAYIZ M",
+        "1160": "AJMAL ROSHAN PK", "1157": "MUHAMMED SHABIN. K", "1103": "SHADHIN P P", "1124": "MUHAMMAD NAFEEH C",
+        "1140": "MUHAMMED ASHMIL", "1156": "MUHAMMED NASEEM.M", "1167": "NIHAL MUHAMMED K"
+      },
+      "S5": {
+        "1122": "SHAHIN SHADI C K", "1100": "MUHAMMED SIYAD P. V", "1097": "IRFAN RAZIM V", "1107": "MUHAMMED SINAN CK",
+        "1102": "MUHAMMED NASWEEH V P", "1171": "ABDULLAH HAMID K", "1113": "MUHAMMEDHALY SHIHAB.TP", "1104": "MUHAMMED HASEEB P",
+        "1109": "SHAZ ABDUL SAMMED NV", "1126": "MUHAMMAD HADI.PC", "1115": "NAJMUDHEEN", "1170": "MUHAMMED NIHAL M",
+        "1098": "HANAN. BK", "1129": "MUHAMED ZAYAN. M", "1105": "MOHAMMED AFSHAR M", "1096": "AFNAN AHMED.K",
+        "1121": "MUHAMMED NAWAF M", "1176": "MUHAMMED NIHAL P.T", "1127": "ANSHIF.K", "1118": "UMAR AL JOUHAR.P",
+        "1114": "MUHAMMAD SABITH", "1106": "RISAL RAEESUDEEN K", "1123": "AMAL HAYYAN CHOCKLY", "1108": "MUHAMMED SHAHAS AC",
+        "1099": "MOHAMMED AYMAN. E", "1117": "MUHAMMED NASEEM P", "1125": "MUHAMMED SHIFIN C", "1128": "MOHAMMED SAHAL P K",
+        "1120": "MUHAMMED NIHAL. KK", "1112": "MUHAMMED ADHNAN KV", "1083": "MUHAMMED SAHAL P", "1080": "MUHAMMAD RABEEH A",
+        "1110": "AHMAD K MISHKATH.M", "1130": "MUHAMMED RISHAN", "1052": "SHADHIN MOHAMMED", "1062": "MOHAMMED NAFIH M",
+        "1057": "MOHAMMED RASAL KP"
+      },
+      "SS1": {
+        "1050": "MUHAMMAD SINAN PC", "1070": "MUHAMMED MUSAMMIL B K", "1074": "MUAD .M", "1058": "MUHAMMED JALAL AT",
+        "1051": "MUHAMMAD HISHAM T", "1056": "MUHAMMED SHADIN N.M.", "1076": "MUHAMMED MINHAJ KK", "1071": "SAYYID MOHAMMAD ZUHAIR A K",
+        "1075": "MUHAMMED HASHIM P", "1061": "ANSHID M P", "1072": "MOHAMMED SINAN TP", "1078": "MUHAMMED RABIEUE MK",
+        "1088": "MOHAMMED NAEEM K", "1082": "MUHAMMED SANEEN", "1090": "MUHAMMED BASSAM", "1066": "HASHIM MOHAMMED K P",
+        "1063": "MOHAMMED RISHADH. T", "1073": "MUHAMMAD MUSTHAFA KK", "1068": "MUHAMMED UVAIS.EK", "1053": "AMEEN T",
+        "1040": "MUHAMMAD RIFAD K", "1059": "AFSAL", "1064": "MOHAMED SHAMIL M", "1013": "MOHAMMED SAHAD.K",
+        "1087": "MUHAMMED SHAMIL. A", "1089": "ADIL SHAH M", "1084": "ASIM MOHAMED M", "1024": "FADHIL KATTIPARUTHI",
+        "1008": "MUHAMMED MINHAJ", "1086": "MOHAMMED NIDAL", "1085": "MUHAMMED NAFIH", "1014": "MURSHID MK"
+      },
+      "SS2": {
+        "1022": "MUHAMMAD NASEEF K", "970": "ABDUL BASIT PARAMBADEN", "1035": "MUHAMMED SABEEH MK", "1012": "MOHAMMED RUBAIB O P",
+        "1038": "MUHAMMAD SALIM KP", "1168": "MOHAMMED HITHBAN P", "1221": "SHIFIN MUHAMMED C", "1010": "SHABEER ALI P.V",
+        "1037": "MUHAMMAD SHIFIN", "1023": "ABDUL BASITH KK", "1015": "FADIL FIROZ", "1025": "MUHAMMED ASLAH",
+        "1005": "MUHAMMAD SINAN.MK", "1031": "MUHAMMED SAHAL N", "1041": "MUHAMMED SHAMMAS. M", "1033": "MUHAMMED SHAJEEH",
+        "1016": "ABDUL NAFIH", "998": "MUHAMMED RINSHAD P", "1030": "NIHAL ABOOBACKER", "1028": "SHINAS MOHAMED",
+        "1019": "MOHAMMED IHSAN C", "1036": "SABEEH AHMED. N. K.", "975": "MUHAMMED SANIH", "1026": "MUHAMMED RABEEH. T",
+        "1021": "AHMED JURAIJ KT", "1018": "MUHAMMED AJUMAL", "1006": "AFLAH AHAMED C", "1004": "MUHAMMED VASIL C.S",
+        "1039": "SALMAN NASOOH", "1223": "MUHAMMED FAHEEM", "1255": "FINAN"
+      }
     };
 
     // Load Questions (Default or from LocalStorage)
@@ -314,8 +371,6 @@
       classSelect: document.getElementById('classSelect'),
       idSelect: document.getElementById('idSelect'),
       nameInput: document.getElementById('nameInput'),
-      studentFields: document.getElementById('studentFields'),
-      studentFields2: document.getElementById('studentFields2'),
       
       quizStatusBadge: document.getElementById('quizStatusBadge'),
       statusTableBody: document.getElementById('statusTableBody')
@@ -476,7 +531,7 @@
     function logout() { location.reload(); }
 
     // ============================================
-    // QUIZ LOGIC (Simplified from previous)
+    // QUIZ LOGIC
     // ============================================
     function startQuiz() {
       showPage(el.quizPage);
